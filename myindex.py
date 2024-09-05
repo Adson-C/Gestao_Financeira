@@ -1,13 +1,13 @@
 from dash import html, dcc
 import dash
 from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
+import dash_bootstrap_templates as dbc
 import pandas as pd
 import plotly.express as px
 
 from app import *
 
-from import components import *
+from components import sidebar, dashboards, extratos
 
 
 # =========  Layout  =========== #
@@ -18,13 +18,13 @@ app.layout = dbc.Container(children=[
     dbc.Row([
         dbc.Col([
             dcc.Location(id="url"),
-            sidebar.layout,
+            sidebar.layout
 
-        ], md=2, style={'backgroundColor': '#f8f9fa'}),
+        ], md=2, style={'backgroundColor': 'red', 'height': '1008px'}),
 
         dbc.Col([
             content
-        ], md=10, style={'backgroundColor': '#f8f9fa'}),
+        ], md=10, style={'backgroundColor': 'blue', 'height': '1008px'}),
     ])
     
 ], fluid=True,)
@@ -34,7 +34,7 @@ def render_page_content(pathname):
     if pathname == "/" or pathname == "/dashboards":
         return dashboards.layout
     if pathname == "/extratos":
-        return extratos.layout   
+        return extratos.layout
     else:
         return html.P("404: Not found", className="p-3")
 

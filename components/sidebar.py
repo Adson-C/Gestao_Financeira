@@ -11,3 +11,8 @@ import numpy as np
 import pandas as pd
 
 
+# =========  Layout  =========== #
+layout = dbc.Col([
+     html.H5("Pagina de Sidebar"),
+
+], )
