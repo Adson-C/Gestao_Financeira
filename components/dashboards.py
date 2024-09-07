@@ -35,10 +35,10 @@ layout = dbc.Col([
                     dbc.Card(
                         html.Div(className='fa fa-university', style=card_icon),
                         color='warning',
-                        style={'maxWidth': 75, 'height': 100, 'margin-left': '-10'},
+                        style={'maxWidth': '75', 'height': '100px', 'margin-left': '-10'},
                     ),
                 ])
-            ], width=4),
+            ], width=4),  # Responsivo com breakpoints para diferentes tamanhos de tela  xs=12, sm=6, md=4
             # Receitas
             dbc.Col([
                 dbc.CardGroup([
@@ -49,10 +49,10 @@ layout = dbc.Col([
                     dbc.Card(
                         html.Div(className='fa fa-smile-o', style=card_icon),
                         color='success',
-                        style={'maxWidth': 75, 'height': 100, 'margin-left': '-10'},
+                         style={'maxWidth': '75', 'height': '100px', 'margin-left': '-10'},
                     ),
                 ])
-            ], width=4),
+            ], width=4),  # Responsivo xs=12, sm=6, md=4
             # Despesas
             dbc.Col([
                 dbc.CardGroup([
@@ -63,10 +63,10 @@ layout = dbc.Col([
                     dbc.Card(
                         html.Div(className='fa fa-meh-o', style=card_icon),
                         color='danger',
-                        style={'maxWidth': 75, 'height': 100, 'margin-left': '-10'},
+                         style={'maxWidth': '75', 'height': '100px', 'margin-left': '-10'},
                     ),
                 ])
-            ], width=4),
+            ], width=4),  # Responsivo xs=12, sm=6, md=4
         ], style={'margin': '10px'}),
         # Filtro de Análise lançamentos
         dbc.Row([
@@ -104,18 +104,17 @@ layout = dbc.Col([
                     style={'z-index': '100'}),
                 
                 ],style={'height': '100%', 'padding': '20px'})
-            ], width=4),
+            ], width=4), # responsivoxs=12, sm=12, md=4)
             # Graficos 1
             dbc.Col(
-                dbc.Card(dcc.Graph(id="graph1"), style={'height': '100%', 'padding': '10px'}), width=8
-            ),
+                dbc.Card(dcc.Graph(id="graph1"), style={'height': '100%', 'padding': '10px'}), width=8),
         ], style={'margin': '10px'}),
 
         dbc.Row([
             # Grafico 2 3 4
-            dbc.Col(dbc.Card(dcc.Graph(id="graph2"), style={'padding': '10px'}), width=6),
-            dbc.Col(dbc.Card(dcc.Graph(id="graph3"), style={'padding': '10px'}), width=3),
-            dbc.Col(dbc.Card(dcc.Graph(id="graph4"), style={'padding': '10px'}), width=3),
+            dbc.Col(dbc.Card(dcc.Graph(id="graph2"), style={'padding': '10px'}),  width=6),
+            dbc.Col(dbc.Card(dcc.Graph(id="graph3"), style={'padding': '10px'}),  width=3),
+            dbc.Col(dbc.Card(dcc.Graph(id="graph4"), style={'padding': '10px'}),  width=3),
         ])
     ])
 
