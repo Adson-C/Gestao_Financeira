@@ -133,7 +133,7 @@ layout = dbc.Col([
                             # Despesa =================
                             dbc.Col([
                                 dbc.Label("Descrição: "),
-                                dbc.Input(placeholder="Ex.: Gasolina, Luz, estacionamento....", id="txt-depesa"),
+                                dbc.Input(placeholder="Ex.: Gasolina, Luz, estacionamento....", id="txt_despesa"),
                         ], width=6),
                            dbc.Col([
                                dbc.Label("Valor: "),
@@ -204,8 +204,8 @@ layout = dbc.Col([
 
                             html.Div(id="id_teste_depesa", style={'padding-top': '20px'}),
                             dbc.ModalFooter([
-                                dbc.Button("Adicionar", id='salvar-despesa', color="success"),
-                                dbc.Popover(dbc.PopoverBody("Receita salva"), target="salvar-despesa", placement="left", trigger="click"),
+                                dbc.Button("Adicionar", id='salvar_despesa', color="success"),
+                                dbc.Popover(dbc.PopoverBody("Despesa salva"), target="salvar_despesa", placement="left", trigger="click"),
                             ])
                         ], style={'margin-top': '25px'})
                     ])
@@ -284,34 +284,34 @@ def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, d
 
 # =========  Callbacks  =========== #
 # Pop-up despesas
-# @app.callback(
-#     Output("store-despesas", "data"),
-#     Input("salvar_despesa", "n_clicks"),
-#     [
-#         State("txt-despesa", "value"),
-#         State("valor_despesa", "value"),
-#         State("data_despesa", "date"),
-#         State("switches-input-despesa", "value"),
-#         State("select_despesa", "value"),
-#         State("store-despesas", "data"),
-#     ]
+@app.callback(
+    Output("store-despesas", "data"),
+    Input("salvar_despesa", "n_clicks"),
+    [
+        State("txt_despesa", "value"),
+        State("valor_despesa", "value"),
+        State("data_despesa", "date"),
+        State("switches-input-despesa", "value"),
+        State("select_despesa", "value"),
+        State("store-despesas", "data"),
+    ]
 
-# )
-# def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas):
-#     # import pdb 
-#     # pdb.set_trace()
+)
+def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas):
+    # import pdb 
+    # pdb.set_trace()
 
-#     df_despesas = pd.DataFrame(dict_despesas)
+    df_despesas = pd.DataFrame(dict_despesas)
 
-#     if n_clicks and not (valor == '' or valor == None):
-#         valor = round(float(valor), 2)
-#         date = pd.to_datetime(date).date()
-#         categoria = categoria[0] if type(categoria) is list else categoria
-#         recebido = 1 if 1 swtches else 0
-#         fixo = 1 if 2 in swtches else 0
+    if n_clicks and not (valor == '' or valor == None):
+        valor = round(float(valor), 2)
+        date = pd.to_datetime(date).date()
+        categoria = categoria[0] if type(categoria) is list else categoria
+        recebido = 1 if 1 in switches else 0
+        fixo = 1 if 2 in switches else 0
 
-#         df_despesas.loc[df_despesas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
-#         df_despesas.to_csv("df_despesas.csv")
+        df_despesas.loc[df_despesas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
+        df_despesas.to_csv("df_despesas.csv")
         
-#     data_return = df_despesas.to_dict()    
-#     return data_return
+    data_return = df_despesas.to_dict()    
+    return data_return
