@@ -99,7 +99,7 @@ layout = dbc.Col([
                                             html.Legend("Excluir categoria : ", style={'color': 'red'}),
                                             dbc.Checklist(
                                                 id="checkbox-category-receita",
-                                                options=[],
+                                                options=[{'label': i, 'value': i} for i in cat_receita],
                                                 value=[],
                                                 label_checked_style={'color': 'red'},
                                                 input_checked_style={'backgroundColor': 'blue', 'borderColor': 'orange'},
@@ -188,8 +188,8 @@ layout = dbc.Col([
                                         dbc.Col([
                                             html.Legend("Excluir categoria : ", style={'color': 'red'}),
                                             dbc.Checklist(
-                                                id="checkbox-category-despesa",
-                                                options=[],
+                                                id="chicklist-category-despesa",
+                                                options=[{'label': i, 'value': i} for i in cat_despesa],
                                                 value=[],
                                                 label_checked_style={'color': 'red'},
                                                 input_checked_style={'backgroundColor': 'blue', 'borderColor': 'orange'},
@@ -315,3 +315,37 @@ def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, d
         
     data_return = df_despesas.to_dict()    
     return data_return
+
+@app.callback(
+    
+    [
+        Output("select_despesa", "options"),
+        Output("chicklist-category-despesa", "options"),
+        Output("chicklist-category-despesa", "value"),
+        Output("store-cat-despesas", "data")],
+    
+    [
+        Input("add-category-despesa", "n_clicks"),
+        Input("remover-category-despesa", "n_clicks")],
+    
+    [
+        State("input-add-despesa", "value"),
+        State("chicklist-category-despesa", "value"),
+        State("store-cat-despesas", "data")
+    ]
+)
+def add_category_despesa(n1, n2, txt, check_delete, data):
+    cat_despesa = list(data["Categoria"].values())
+    
+    if n1 and not (txt == '' or txt == None):
+        cat_despesa = cat_despesa + [txt] if txt not in cat_despesa else cat_despesa
+        
+    if n2:
+        if len(check_delete) > 0:
+            cat_despesa = [i for i in cat_despesa if i not in check_delete]
+            
+    opt_despesa = [{'label': i, 'value': i} for i in cat_despesa]
+    df_cat_despesa = pd.DataFrame(cat_despesa, columns=["Categoria"])
+    df_cat_despesa.to_csv("df_cat_despesa.csv")
+    data_return = df_cat_despesa.to_dict()
+    return [opt_despesa, opt_despesa, [], data_return]
