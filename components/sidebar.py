@@ -10,6 +10,8 @@ import plotly.express as px
 import numpy as np
 import pandas as pd
 
+from globals import *
+
 
 # =========  Layout  =========== #
 layout = dbc.Col([
@@ -62,20 +64,18 @@ layout = dbc.Col([
                             ], width=4),
                             # Extras =================
                             dbc.Col([
-                                dbc.Label("Extras: "),
+                                dbc.Label("Extras"),
                                 dbc.Checklist(
-                                    options=[],
-                                    value=[],
+                                    options=[{"label": "Foi recebida", "value": 1},
+                                        {"label": "Receita Recorrente", "value": 2}],
+                                    value=[1],
                                     id="switches-input-receita",
-                                    switch=True
-                                )
+                                    switch=True),
                             ], width=4),
                             # Categotia ===============
                             dbc.Col([
                                 html.Label("Categoria da receita: "),
-                                dbc.Select(id="select_receita",
-                                           options=[], 
-                                           value=[])
+                                dbc.Select(id="select_receita",options=[{'label': i, 'value': i} for i in cat_receita],value=cat_receita[0])
                             ], width=4),
                             
                         ], style={'margin-top': '25px'}),
@@ -113,8 +113,8 @@ layout = dbc.Col([
 
                             html.Div(id="id_teste_receita", style={'padding-top': '20px'}),
                             dbc.ModalFooter([
-                                dbc.Button("Adicionar", id='salvar-receita', color="success"),
-                                dbc.Popover(dbc.PopoverBody("Receita salva"), target="salvar-receita", placement="left", trigger="click"),
+                                dbc.Button("Adicionar", id='salvar_receita', color="success"),
+                                dbc.Popover(dbc.PopoverBody("Receita salva"), target="salvar_receita", placement="left", trigger="click"),
                             ])
                     ], style={'margin-top': '25px'})
                     ])
@@ -154,18 +154,21 @@ layout = dbc.Col([
                             ], width=4),
                             # Extras =================
                             dbc.Col([
-                                dbc.Label("Extras: "),
-                                dbc.Checklist(
-                                    options=[],
-                                    value=[],
-                                    id="switches-input-despesa",
-                                    switch=True
-                                )
-                            ], width=4),
+                            dbc.Label("Opções Extras"),
+                            dbc.Checklist(
+                                options=[{"label": "Foi recebida", "value": 1},
+                                    {"label": "despesa Recorrente", "value": 2}],
+                                value=[1],
+                                id="switches-input-despesa",
+                                switch=True),
+                        ], width=4),
                             # Categotia ===============
                             dbc.Col([
                                 html.Label("Categoria da despesa: "),
-                                dbc.Select(options=[], id="select_despesa", value=[])
+                                dbc.Select(
+                                    id="select_despesa",
+                                    options=[{'label': i, 'value': i} for i in cat_despesa],
+                                    value=cat_despesa[0])
                             ], width=4)
                         ], style={'margin-top': '25px'}),
                         dbc.Row([
@@ -222,25 +225,93 @@ layout = dbc.Col([
 
           ], id="sidebar_completa")
 
-
 # =========  Callbacks  =========== #
 # Pop-up receita
 @app.callback(
     Output("modal-novo-receita", "is_open"),
     Input("open-novo-receita", "n_clicks"),
-    State("modal-novo-receita", "is_open"),
+    State("modal-novo-receita", "is_open")
 )
-def toggle_modal_novo_receita(n1, is_open):
+def toggle_modal_receita(n1, is_open):
     if n1:
         return not is_open
 
-# =========  Callbacks  =========== #
+
 # Pop-up despesa
 @app.callback(
     Output("modal-novo-despesa", "is_open"),
     Input("open-novo-despesa", "n_clicks"),
-    State("modal-novo-despesa", "is_open"),
+    State("modal-novo-despesa", "is_open")
 )
-def toggle_modal_novo_despesa(n1, is_open):
+def toggle_modal_despesa(n1, is_open):
     if n1:
         return not is_open
+
+
+# =========  Callbacks  =========== 
+# Pop-up receita
+@app.callback(
+    Output("store-receitas", "data"),
+    Input("salvar_receita", "n_clicks"),
+    [
+        State("txt-receita", "value"),
+        State("valor_receita", "value"),
+        State("data_receita", "date"),
+        State("switches-input-receita", "value"),
+        State("select_receita", "value"),
+        State("store-receitas", "data"),
+    ]
+
+)
+def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, dict_receitas):
+    # import pdb 
+    # pdb.set_trace()
+
+    df_receitas = pd.DataFrame(dict_receitas)
+
+    if n_clicks and not (valor == '' or valor == None):
+        valor = round(float(valor), 2)
+        date = pd.to_datetime(date).date()
+        categoria = categoria[0] if type(categoria) == list else categoria
+        recebido = 1 if 1 in switches else 0
+        fixo = 1 if 2 in switches else 0
+
+        df_receitas.loc[df_receitas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
+        df_receitas.to_csv("df_receitas.csv")
+        
+    data_return = df_receitas.to_dict() 
+    return data_return
+
+# =========  Callbacks  =========== #
+# Pop-up despesas
+# @app.callback(
+#     Output("store-despesas", "data"),
+#     Input("salvar_despesa", "n_clicks"),
+#     [
+#         State("txt-despesa", "value"),
+#         State("valor_despesa", "value"),
+#         State("data_despesa", "date"),
+#         State("switches-input-despesa", "value"),
+#         State("select_despesa", "value"),
+#         State("store-despesas", "data"),
+#     ]
+
+# )
+# def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas):
+#     # import pdb 
+#     # pdb.set_trace()
+
+#     df_despesas = pd.DataFrame(dict_despesas)
+
+#     if n_clicks and not (valor == '' or valor == None):
+#         valor = round(float(valor), 2)
+#         date = pd.to_datetime(date).date()
+#         categoria = categoria[0] if type(categoria) is list else categoria
+#         recebido = 1 if 1 swtches else 0
+#         fixo = 1 if 2 in swtches else 0
+
+#         df_despesas.loc[df_despesas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
+#         df_despesas.to_csv("df_despesas.csv")
+        
+#     data_return = df_despesas.to_dict()    
+#     return data_return

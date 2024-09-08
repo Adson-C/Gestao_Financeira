@@ -9,12 +9,20 @@ from app import *
 
 from components import sidebar, dashboards, extratos
 
+# variaveis globais
+from globals import *
+
 
 # =========  Layout  =========== #
 content = html.Div(id="page-content")
 
 
 app.layout = dbc.Container(children=[
+     # Stores the URL cache
+    dcc.Store(id="store-receitas", data=df_receitas.to_dict()),
+    dcc.Store(id="store-despesas", data=df_despesas.to_dict()),
+    dcc.Store(id="store-cat-receitas", data=df_cat_receita.to_dict()),
+    dcc.Store(id="store-cat-despesas", data=df_cat_despesa.to_dict()),
     dbc.Row([
         dbc.Col([
             dcc.Location(id="url"),
