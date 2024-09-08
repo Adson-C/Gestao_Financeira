@@ -316,8 +316,9 @@ def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, d
     data_return = df_despesas.to_dict()    
     return data_return
 
-@app.callback(
-    
+# =========  Callbacks  =========== #
+# Remover/add Categorias Despesas
+@app.callback( 
     [
         Output("select_despesa", "options"),
         Output("chicklist-category-despesa", "options"),
@@ -349,3 +350,38 @@ def add_category_despesa(n1, n2, txt, check_delete, data):
     df_cat_despesa.to_csv("df_cat_despesa.csv")
     data_return = df_cat_despesa.to_dict()
     return [opt_despesa, opt_despesa, [], data_return]
+
+# =========  Callbacks  =========== #
+# Remover/add Categorias receita
+@app.callback( 
+    [
+        Output("select_receita", "options"),
+        Output("checkbox-category-receita", "options"),
+        Output("checkbox-category-receita", "value"),
+        Output("store-cat-receitas", "data")],
+    
+    [
+        Input("add-category-receita", "n_clicks"),
+        Input("remover-category-receita", "n_clicks")],
+    
+    [
+        State("input-add-receita", "value"),
+        State("checkbox-category-receita", "value"),
+        State("store-cat-receitas", "data")
+    ]
+)
+def add_category_receita(n1, n2, txt, check_delete, data):
+    cat_receita = list(data["Categoria"].values())
+    
+    if n1 and not (txt == '' or txt == None):
+        cat_receita = cat_receita + [txt] if txt not in cat_receita else cat_receita
+        
+    if n2:
+        if len(check_delete) > 0:
+            cat_receita = [i for i in cat_receita if i not in check_delete]
+            
+    opt_receita = [{'label': i, 'value': i} for i in cat_receita]
+    df_cat_receita = pd.DataFrame(cat_receita, columns=["Categoria"])
+    df_cat_receita.to_csv("df_cat_receita.csv")
+    data_return = df_cat_despesa.to_dict()
+    return [opt_receita, opt_receita, [], data_return]
