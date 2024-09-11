@@ -38,10 +38,10 @@ layout = dbc.Col([
 # =========  Callbacks  =========== #
 # Tabela
 @app.callback(
-     Output("tabela-despesa", "children"),
+     Output("tabela-despesas", "children"),
      Input("store-despesas", "data"),
 )
-def imprimir_tabela (data):
+def imprimir_tabela(data):
     df = pd.DataFrame(data)
     df['Data'] = pd.to_datetime(df['Data']).dt.date
 
