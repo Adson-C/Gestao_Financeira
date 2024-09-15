@@ -15,17 +15,17 @@ from globals import *
 
 # DataFrames and Dcc.Store
 
-df_receitas = pd.read_csv("df_receitas.csv", index_col=0, parse_dates=True)
-df_receitas_aux = df_receitas.to_dict()
+# df_receitas = pd.read_csv("df_receitas.csv", index_col=0, parse_dates=True)
+# df_receitas_aux = df_receitas.to_dict()
 
-df_despesas = pd.read_csv("df_despesas.csv", index_col=0, parse_dates=True)
-df_despesas_aux = df_despesas.to_dict()
+# df_despesas = pd.read_csv("df_despesas.csv", index_col=0, parse_dates=True)
+# df_despesas_aux = df_despesas.to_dict()
 
-list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
-list_receitas_aux = list_receitas.to_dict()
+# list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
+# list_receitas_aux = list_receitas.to_dict()
 
-list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
-list_despesas_aux = list_despesas.to_dict()
+# list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
+# list_despesas_aux = list_despesas.to_dict()
 
 # =========  Layout  =========== #
 content = html.Div(id="page-content")

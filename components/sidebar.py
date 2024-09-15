@@ -92,15 +92,15 @@ layout = dbc.Col([
                                             html.Br(),
                                             dbc.Button("Adicionar", className="btn btn-success", id="add-category-receita", style={'margin-top': '20px'}),
                                             html.Br(),
-                                            html.Div(id="category-div-receita", style={}),
+                                            html.Div(id="category-div-add-receita", style={}),
                                         ], width=6),
                                         # Remover Categorias ===============
                                         dbc.Col([
                                             html.Legend("Excluir categoria : ", style={'color': 'red'}),
                                             dbc.Checklist(
-                                                id="checkbox-category-receita",
+                                                id="checklist-selected-style-receita",
                                                 options=[{'label': i, 'value': i} for i in cat_receita],
-                                                value=[],
+                                                value=[cat_receita[0]],
                                                 label_checked_style={'color': 'red'},
                                                 input_checked_style={'backgroundColor': 'blue', 'borderColor': 'orange'},
                                             ),
@@ -182,7 +182,7 @@ layout = dbc.Col([
                                             html.Br(),
                                             dbc.Button("Adicionar", className="btn btn-success", id="add-category-despesa", style={'margin-top': '20px'}),
                                             html.Br(),
-                                            html.Div(id="category-div-despesa", style={}),
+                                            html.Div(id="category-div-add-despesa", style={}),
                                         ], width=6),
                                         # Remover Categorias ===============
                                         dbc.Col([
@@ -356,8 +356,8 @@ def add_category_despesa(n1, n2, txt, check_delete, data):
 @app.callback( 
     [
         Output("select_receita", "options"),
-        Output("checkbox-category-receita", "options"),
-        Output("checkbox-category-receita", "value"),
+        Output("checklist-selected-style-receita", "options"),
+        Output("checklist-selected-style-receita", "value"),
         Output("store-cat-receitas", "data")],
     
     [
@@ -366,7 +366,7 @@ def add_category_despesa(n1, n2, txt, check_delete, data):
     
     [
         State("input-add-receita", "value"),
-        State("checkbox-category-receita", "value"),
+        State("checklist-selected-style-receita", "value"),
         State("store-cat-receitas", "data")
     ]
 )
@@ -383,5 +383,5 @@ def add_category_receita(n1, n2, txt, check_delete, data):
     opt_receita = [{'label': i, 'value': i} for i in cat_receita]
     df_cat_receita = pd.DataFrame(cat_receita, columns=["Categoria"])
     df_cat_receita.to_csv("df_cat_receita.csv")
-    data_return = df_cat_despesa.to_dict()
+    data_return = df_cat_receita.to_dict()
     return [opt_receita, opt_receita, [], data_return]

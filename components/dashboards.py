@@ -162,25 +162,29 @@ def saldo_total(receitas, despesas):
 # Graficos 1
 @app.callback(
     Output("graph1", "figure"),
-    
-    [Input("store-receitas", "data"),
-    Input("store-despesas", "data"),
-    Input("dropdown-despesa", "value"),
-    Input("dropdown-receita", "value"),]
+    [
+        Input("store-receitas", "data"),
+        Input("store-despesas", "data"),
+        Input("dropdown-despesa", "value"),
+        Input("dropdown-receita", "value"),
+    ],
 )
-def grafico_1(data_receita, data_despesa, despesa, receita):
-    df_despesas = pd.DataFrame(data_despesa).set_index("Data")[["Valor"]]
-    df_ds = df_despesas.groupby("Data").sum().rename(columns={"Valor": "Despesa"})
-    df_receitas = pd.DataFrame(data_receita).set_index("Data")[["Valor"]]
-    df_rc = df_receitas.groupby("Data").sum().rename(columns={"Valor": "Receita"})
+def create_graph1(receita_data, despesa_data, despesa, receita):
+    """
+    Create the first graph, a line graph of the cash flow over time.
+    """
+    receita_df = pd.DataFrame(receita_data).set_index("Data")[["Valor"]]
+    despesa_df = pd.DataFrame(despesa_data).set_index("Data")[["Valor"]]
 
-    df_acum = df_ds.join(df_rc, how="outer").fillna(0)
-    df_acum["Acum"] = df_acum["Receita"] - df_acum["Despesa"]
-    df_acum["Acum"] = df_acum["Acum"].cumsum()
+    receita_sum = receita_df.groupby("Data").sum().rename(columns={"Valor": "Receita"})
+    despesa_sum = despesa_df.groupby("Data").sum().rename(columns={"Valor": "Despesa"})
+    df = receita_sum.join(despesa_sum, how="outer").fillna(0)
 
-# grafico 1
+    df["Acum"] = df["Receita"] - df["Despesa"]
+    df["Acum"] = df["Acum"].cumsum()
+
     fig = go.Figure()
-    fig.add_trace(go.Scatter(name="Fluxo de caixa", x=df_acum.index, y=df_acum["Acum"], mode="lines"))
+    fig.add_trace(go.Scatter(name="Fluxo de caixa", x=df.index, y=df["Acum"], mode="lines"))
 
     fig.update_layout(margin=graph_margin, height=400)
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
