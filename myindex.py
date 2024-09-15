@@ -10,22 +10,22 @@ from app import *
 from components import sidebar, dashboards, extratos
 
 # variaveis globais
-from globals import *
+# from globals import *
 
 
 # DataFrames and Dcc.Store
 
-# df_receitas = pd.read_csv("df_receitas.csv", index_col=0, parse_dates=True)
-# df_receitas_aux = df_receitas.to_dict()
+df_receitas = pd.read_csv("df_receitas.csv", index_col=0, parse_dates=True)
+df_receitas_aux = df_receitas.to_dict()
 
-# df_despesas = pd.read_csv("df_despesas.csv", index_col=0, parse_dates=True)
-# df_despesas_aux = df_despesas.to_dict()
+df_despesas = pd.read_csv("df_despesas.csv", index_col=0, parse_dates=True)
+df_despesas_aux = df_despesas.to_dict()
 
-# list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
-# list_receitas_aux = list_receitas.to_dict()
+list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
+list_receitas_aux = list_receitas.to_dict()
 
-# list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
-# list_despesas_aux = list_despesas.to_dict()
+list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
+list_despesas_aux = list_despesas.to_dict()
 
 # =========  Layout  =========== #
 content = html.Div(id="page-content")
@@ -33,10 +33,10 @@ content = html.Div(id="page-content")
 
 app.layout = dbc.Container(children=[
      # Stores the URL cache
-    dcc.Store(id="store-receitas", data=df_receitas.to_dict()),
-    dcc.Store(id="store-despesas", data=df_despesas.to_dict()),
-    dcc.Store(id="store-cat-receitas", data=df_cat_receita.to_dict()),
-    dcc.Store(id="store-cat-despesas", data=df_cat_despesa.to_dict()),
+    dcc.Store(id="store-receitas", data=df_receitas_aux),
+    dcc.Store(id="store-despesas", data=df_despesas_aux),
+    dcc.Store(id="store-cat-receitas", data=list_receitas_aux),
+    dcc.Store(id="store-cat-despesas", data=list_despesas_aux),
     dbc.Row([
         dbc.Col([
             dcc.Location(id="url"),

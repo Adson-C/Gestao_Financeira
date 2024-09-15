@@ -16,7 +16,7 @@ from dash_bootstrap_templates import ThemeChangerAIO
 
 # =========  Layout  =========== #
 layout = dbc.Col([
-               html.H1("Controle Financeiro", className="text-primary"),
+               html.H2("Controle Financeiro", className="text-primary"),
                html.P("By: Adson Sá", className="text-info"),
                html.Hr(),
                
@@ -25,6 +25,75 @@ layout = dbc.Col([
                     children=[
                         html.Img(src='/assets/img_hom.png', id='avatar_change', alt='Avatar', className='perfil_avatar')
                     ], style={'background-color': 'transparent', 'border-color': 'transparent'}),
+                
+                dbc.Modal([
+                    dbc.ModalHeader(dbc.ModalTitle("Selecionar Perfil")),
+                    dbc.ModalBody([
+                        dbc.Row([
+                            dbc.Col([
+                                dbc.Card([
+                                    dbc.CardImg(src="/assets/img_hom.png", className='perfil_avatar', top=True),
+                                    dbc.CardBody([
+                                        html.H4("Perfil Homem", className="card-title"),
+                                        html.P(
+                                            "Um Card com exemplo do perfil Homem. Texto para preencher o espaço",
+                                            className="card-text",
+                                        ),
+                                        dbc.Button("Acessar", color="warning"),
+                                    ]),
+                                ]),
+                            ], width=6),
+                            dbc.Col([
+                                dbc.Card([
+                                    dbc.CardImg(src="/assets/img_fem2.png", top=True, className='perfil_avatar'),
+                                    dbc.CardBody([
+                                        html.H4("Perfil Mulher", className="card-title"),
+                                        html.P(
+                                            "Um Card com exemplo do perfil Mulher. Texto para preencher o espaço",
+                                            className="card-text",
+                                        ),
+                                        dbc.Button("Acessar", color="warning"),
+                                    ]),
+                                ]),
+                            ], width=6),
+                        ], style={"padding": "5px"}),
+                        dbc.Row([
+                            dbc.Col([
+                                dbc.Card([
+                                    dbc.CardImg(src="/assets/img_home.png", top=True, className='perfil_avatar'),
+                                    dbc.CardBody([
+                                        html.H4("Perfil Casa", className="card-title"),
+                                        html.P(
+                                            "Um Card com exemplo do perfil Casa. Texto para preencher o espaço",
+                                            className="card-text",
+                                        ),
+                                        dbc.Button("Acessar",  color="warning"),
+                                    ]),
+                                ]),
+                            ], width=6),
+                            dbc.Col([
+                                dbc.Card([
+                                    dbc.CardImg(src="/assets/img_plus.png", top=True, className='perfil_avatar'),
+                                    dbc.CardBody([
+                                        html.H4("Adicionar Novo Perfil", className="card-title"),
+                                        html.P(
+                                            "Esse projeto é um protótipo, o botão de adicionar um novo perfil esta desativado momentaneamente!",
+                                            className="card-text",
+                                        ),
+                                        dbc.Button("Adicionar", color="success"),
+                                    ]),
+                                ]),
+                            ], width=6),
+                        ], style={"padding": "5px"}),
+                    ]),
+                ],
+                style={"background-color": "rgba(0, 0, 0, 0.5)"},
+                id="modal-perfil",
+                size="lg",
+                is_open=False,
+                centered=True,
+                backdrop=True
+                ),
                 
                 # Button de novo =============================================
                 dbc.Row([
@@ -88,13 +157,13 @@ layout = dbc.Col([
                                     dbc.Row([
                                         # Adcionar Categorias ===============
                                         dbc.Col([
-                                            html.Legend("Adcionar categoria: ", style={'color': 'green'}),
-                                            dbc.Input(type="text", placeholder="Nova categoria...", id="input-add-receita", value=""), 
-                                            html.Br(),
-                                            dbc.Button("Adicionar", className="btn btn-success", id="add-category-receita", style={'margin-top': '20px'}),
-                                            html.Br(),
-                                            html.Div(id="category-div-add-receita", style={}),
-                                        ], width=6),
+                                                html.Legend("Adicionar categoria", style={'color': 'green'}),
+                                                dbc.Input(type="text", placeholder="Nova categoria...", id="input-add-receita", value=""),
+                                                html.Br(),
+                                                dbc.Button("Adicionar", className="btn btn-success", id="add-category-receita", style={"margin-top": "20px"}),
+                                                html.Br(),
+                                                html.Div(id="category-div-add-receita", style={}),
+                                            ], width=6),
                                         # Remover Categorias ===============
                                         dbc.Col([
                                             html.Legend("Excluir categoria : ", style={'color': 'red'}),
@@ -237,6 +306,16 @@ layout = dbc.Col([
 def toggle_modal_receita(n1, is_open):
     if n1:
         return not is_open
+    
+# Pop-up perfis
+@app.callback(
+    Output("modal-perfil", "is_open"),
+    Input("btn_avatar", "n_clicks"),
+    State("modal-perfil", "is_open")
+)
+def toggle_modal_pefil(n1, is_open):
+    if n1:
+        return not is_open
 
 
 # Pop-up despesa
@@ -320,70 +399,98 @@ def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, d
 
 # =========  Callbacks  =========== #
 # Remover/add Categorias Despesas
-@app.callback( 
+@app.callback(
     [
+        Output("category-div-add-despesa", "children"),
+        Output("category-div-add-despesa", "style"),
         Output("select_despesa", "options"),
         Output("chicklist-category-despesa", "options"),
         Output("chicklist-category-despesa", "value"),
-        Output("store-cat-despesas", "data")],
-    
+        Output("store-cat-despesas", "data")
+    ],
     [
         Input("add-category-despesa", "n_clicks"),
-        Input("remover-category-despesa", "n_clicks")],
-    
+        Input("remover-category-despesa", "n_clicks")
+    ],
     [
         State("input-add-despesa", "value"),
         State("chicklist-category-despesa", "value"),
         State("store-cat-despesas", "data")
     ]
 )
-def add_category_despesa(n1, n2, txt, check_delete, data):
+def add_category(n, n2, txt, check_delete, data):
     cat_despesa = list(data["Categoria"].values())
+
+    txt1 = []
+    style1 = {}
+
+    if n:
+        if txt == "" or txt == None:
+            txt1 = "O campo de texto não pode estar vazio para o registro de uma nova categoria."
+            style1 = {'color': 'red'}
+
+        else:
+            cat_despesa = cat_despesa + [txt] if txt not in cat_despesa else cat_despesa
+            txt1 = f'A categoria {txt} foi adicionada com sucesso!'
+            style1 = {'color': 'green'}
     
-    if n1 and not (txt == '' or txt == None):
-        cat_despesa = cat_despesa + [txt] if txt not in cat_despesa else cat_despesa
-        
     if n2:
         if len(check_delete) > 0:
-            cat_despesa = [i for i in cat_despesa if i not in check_delete]
-            
-    opt_despesa = [{'label': i, 'value': i} for i in cat_despesa]
-    df_cat_despesa = pd.DataFrame(cat_despesa, columns=["Categoria"])
+            cat_despesa = [i for i in cat_despesa if i not in check_delete]  
+    
+    opt_despesa = [{"label": i, "value": i} for i in cat_despesa]
+    df_cat_despesa = pd.DataFrame(cat_despesa, columns=['Categoria'])
     df_cat_despesa.to_csv("df_cat_despesa.csv")
     data_return = df_cat_despesa.to_dict()
-    return [opt_despesa, opt_despesa, [], data_return]
+
+    return [txt1, style1, opt_despesa, opt_despesa, [], data_return]
 
 # =========  Callbacks  =========== #
 # Remover/add Categorias receita
-@app.callback( 
+@app.callback(
     [
+        Output("category-div-add-receita", "children"),
+        Output("category-div-add-receita", "style"),
         Output("select_receita", "options"),
         Output("checklist-selected-style-receita", "options"),
         Output("checklist-selected-style-receita", "value"),
-        Output("store-cat-receitas", "data")],
-    
+        Output("store-cat-receitas", "data")
+    ],
     [
         Input("add-category-receita", "n_clicks"),
-        Input("remover-category-receita", "n_clicks")],
-    
+        Input("remover-category-receita", "n_clicks")
+    ],
     [
         State("input-add-receita", "value"),
         State("checklist-selected-style-receita", "value"),
         State("store-cat-receitas", "data")
     ]
 )
-def add_category_receita(n1, n2, txt, check_delete, data):
+def add_categoryrce(n, n2, txt, check_delete, data):
     cat_receita = list(data["Categoria"].values())
-    
-    if n1 and not (txt == '' or txt == None):
+
+    txt1 = []
+    style1 = {}
+
+    if n:
+        if txt == "" or txt == None:
+            txt1 = "O campo de texto não pode estar vazio para o registro de uma nova categoria."
+            style1 = {'color': 'red'}
+
+    if n and not(txt == "" or txt == None):
         cat_receita = cat_receita + [txt] if txt not in cat_receita else cat_receita
-        
+        txt1 = f'A categoria {txt} foi adicionada com sucesso!'
+        style1 = {'color': 'green'}
+    
     if n2:
-        if len(check_delete) > 0:
-            cat_receita = [i for i in cat_receita if i not in check_delete]
-            
-    opt_receita = [{'label': i, 'value': i} for i in cat_receita]
-    df_cat_receita = pd.DataFrame(cat_receita, columns=["Categoria"])
+        if check_delete == []:
+            pass
+        else:
+            cat_receita = [i for i in cat_receita if i not in check_delete]  
+    
+    opt_receita = [{"label": i, "value": i} for i in cat_receita]
+    df_cat_receita = pd.DataFrame(cat_receita, columns=['Categoria'])
     df_cat_receita.to_csv("df_cat_receita.csv")
     data_return = df_cat_receita.to_dict()
-    return [opt_receita, opt_receita, [], data_return]
+
+    return [txt1, style1, opt_receita, opt_receita, [], data_return]
