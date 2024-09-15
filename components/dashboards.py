@@ -10,6 +10,7 @@ import calendar
 # from globals import *
 
 from app import app
+from dash_bootstrap_templates import template_from_url, ThemeChangerAIO
 
 
 # Card icon style
@@ -167,9 +168,10 @@ def saldo_total(receitas, despesas):
         Input("store-despesas", "data"),
         Input("dropdown-despesa", "value"),
         Input("dropdown-receita", "value"),
+        Input(ThemeChangerAIO.ids.radio("theme"), "value")
     ],
 )
-def create_graph1(receita_data, despesa_data, despesa, receita):
+def create_graph1(receita_data, despesa_data, despesa, receita, theme):
     """
     Create the first graph, a line graph of the cash flow over time.
     """
@@ -186,7 +188,7 @@ def create_graph1(receita_data, despesa_data, despesa, receita):
     fig = go.Figure()
     fig.add_trace(go.Scatter(name="Fluxo de caixa", x=df.index, y=df["Acum"], mode="lines"))
 
-    fig.update_layout(margin=graph_margin, height=400)
+    fig.update_layout(margin=graph_margin, template=template_from_url(theme))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -200,9 +202,10 @@ def create_graph1(receita_data, despesa_data, despesa, receita):
     Input("dropdown-despesa", "value"),
     Input("dropdown-receita", "value"),
     Input("date-picker-config", "start_date"),
-    Input("date-picker-config", "end_date"),]
+    Input("date-picker-config", "end_date"),
+    Input(ThemeChangerAIO.ids.radio("theme"), "value")]
 )
-def grah2_show(data_receita, data_despesa, despesa, receita, start_date, end_date):
+def grah2_show(data_receita, data_despesa, despesa, receita, start_date, end_date, theme):
     df_ds = pd.DataFrame(data_despesa)
     df_rc = pd.DataFrame(data_receita)
 
@@ -218,7 +221,7 @@ def grah2_show(data_receita, data_despesa, despesa, receita, start_date, end_dat
 
     # grafico 2
     fig = px.bar(df_final, x="Data", y="Valor", color="Output", barmode="group")
-    fig.update_layout(margin=graph_margin, height=350)
+    fig.update_layout(margin=graph_margin, template=template_from_url(theme))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -228,16 +231,17 @@ def grah2_show(data_receita, data_despesa, despesa, receita, start_date, end_dat
     Output("graph3", "figure"),
     
     [Input("store-receitas", "data"),
-     Input("dropdown-receita", "value"),]
+     Input("dropdown-receita", "value"),
+     Input(ThemeChangerAIO.ids.radio("theme"), "value")]
 )
-def pie_receita3(data_receita, receita):
+def pie_receita3(data_receita, receita, theme):
     df = pd.DataFrame(data_receita)
     df = df[(df["Categoria"].isin(receita))]
 
     # grafico 3
     fig = px.pie(df, values=df.Valor, names=df.Categoria, hole=.2)
     fig.update_layout(title={"text": "Receitas"})
-    fig.update_layout(margin=graph_margin, height=350)
+    fig.update_layout(margin=graph_margin, template=template_from_url(theme))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 # =========  Callbacks  =========== #
@@ -246,15 +250,16 @@ def pie_receita3(data_receita, receita):
     Output("graph4", "figure"),
     
     [Input("store-despesas", "data"),
-     Input("dropdown-despesa", "value"),]
+     Input("dropdown-despesa", "value"),
+     Input(ThemeChangerAIO.ids.radio("theme"), "value")]
 )
-def pie_receita4(data_despesa, despesa):
+def pie_receita4(data_despesa, despesa,theme):
     df = pd.DataFrame(data_despesa)
     df = df[(df["Categoria"].isin(despesa))]
 
     # grafico 4
     fig = px.pie(df, values=df.Valor, names=df.Categoria, hole=.2)
     fig.update_layout(title={"text": "Despesas"})
-    fig.update_layout(margin=graph_margin, height=350)
+    fig.update_layout(margin=graph_margin, template=template_from_url(theme))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig

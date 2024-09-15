@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from globals import *
+from dash_bootstrap_templates import ThemeChangerAIO
 
 
 # =========  Layout  =========== #
@@ -222,6 +223,7 @@ layout = dbc.Col([
                 dbc.NavLink("Dashboards", href="/dashboards", active="exact"),
                 dbc.NavLink("Extratos", href="/extratos", active="exact"),
             ], vertical=True, pills=True, id="nav-buttons", style={'margin-bottom': '50px'}),
+        ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.QUARTZ})
 
           ], id="sidebar_completa")
 
