@@ -172,24 +172,35 @@ def saldo_total(receitas, despesas):
     ],
 )
 def create_graph1(receita_data, despesa_data, despesa, receita, theme):
-    """
-    Create the first graph, a line graph of the cash flow over time.
-    """
-    receita_df = pd.DataFrame(receita_data).set_index("Data")[["Valor"]]
-    despesa_df = pd.DataFrame(despesa_data).set_index("Data")[["Valor"]]
+    df_ds = pd.DataFrame(despesa_data).sort_values(by='Data', ascending=True)
+    df_rc = pd.DataFrame(receita_data).sort_values(by='Data', ascending=True)
+    
+    dfs = [df_ds, df_rc]
 
-    receita_sum = receita_df.groupby("Data").sum().rename(columns={"Valor": "Receita"})
-    despesa_sum = despesa_df.groupby("Data").sum().rename(columns={"Valor": "Despesa"})
-    df = receita_sum.join(despesa_sum, how="outer").fillna(0)
+    for df in dfs:
+        df['Acumulado'] = df['Valor'].cumsum()
+        df['Data'] = pd.to_datetime(df['Data'])
+        df['Mes'] = df['Data'].apply(lambda x: x.month)
+        
+    df_receitas_mes = df_rc.groupby("Mes")["Valor"].sum()
+    df_despesas_mes = df_ds.groupby("Mes")["Valor"].sum()
+    df_saldo_mes = df_receitas_mes - df_despesas_mes
+    df_saldo_mes.to_frame()
+    df_saldo_mes = df_saldo_mes.reset_index()
+    df_saldo_mes['Acumulado'] = df_saldo_mes['Valor'].cumsum()
+    df_saldo_mes['Mes'] = df['Mes'].apply(lambda x: calendar.month_abbr[x])
 
-    df["Acum"] = df["Receita"] - df["Despesa"]
-    df["Acum"] = df["Acum"].cumsum()
+    df_ds = df_ds[df_ds['Categoria'].isin(despesa)]
+    df_rc = df_rc[df_rc['Categoria'].isin(receita)]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(name="Fluxo de caixa", x=df.index, y=df["Acum"], mode="lines"))
+    
+    # fig.add_trace(go.Scatter(name='Despesas', x=df_ds['Data'], y=df_ds['Acumulo'], fill='tonexty', mode='lines'))
+    fig.add_trace(go.Scatter(name='Receitas', x=df_rc['Data'], y=df_rc['Acumulado'], fill='tonextx', mode='lines'))
+    # fig.add_trace(go.Scatter(name='Saldo Mensal', x=df_saldo_mes['Mes'], y=df_saldo_mes['Acumulado'], mode='lines'))
 
     fig.update_layout(margin=graph_margin, template=template_from_url(theme))
-    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     return fig
 
 # =========  Callbacks  =========== #
