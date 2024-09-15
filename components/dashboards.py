@@ -32,12 +32,12 @@ layout = dbc.Col([
                 dbc.CardGroup([
                     dbc.Card([
                         html.Legend("Saldo"),
-                        html.H5("R$ 5400", id="p-saldo-dashboards", style={}),
+                        html.H5("R$ -", id="p-saldo-dashboards", style={}),
                     ], style={'padding-left': '20px', 'padding-top': '10px'}),
                     dbc.Card(
                         html.Div(className='fa fa-university', style=card_icon),
                         color='warning',
-                        style={'maxWidth': '75', 'height': '100px', 'margin-left': '-10'},
+                        style={'maxWidth': 75, 'height': 100, 'margin-left': '-10'},
                     ),
                 ])
             ], width=4),  # Responsivo com breakpoints para diferentes tamanhos de tela  xs=12, sm=6, md=4
@@ -46,12 +46,12 @@ layout = dbc.Col([
                 dbc.CardGroup([
                     dbc.Card([
                         html.Legend("Receita"),
-                        html.H5("R$ 10000", id="p-receita-dashboards", style={}),
+                        html.H5("R$ -", id="p-receita-dashboards", style={}),
                     ], style={'padding-left': '20px', 'padding-top': '10px'}),
                     dbc.Card(
                         html.Div(className='fa fa-smile-o', style=card_icon),
                         color='success',
-                         style={'maxWidth': '75', 'height': '100px', 'margin-left': '-10'},
+                         style={'maxWidth': 75, 'height': 100, 'margin-left': '-10'},
                     ),
                 ])
             ], width=4),  # Responsivo xs=12, sm=6, md=4
@@ -60,12 +60,12 @@ layout = dbc.Col([
                 dbc.CardGroup([
                     dbc.Card([
                         html.Legend("Despesa"),
-                        html.H5("R$ 4600", id="p-despesa-dashboards", style={}),
+                        html.H5("R$ -", id="p-despesa-dashboards", style={}),
                     ], style={'padding-left': '20px', 'padding-top': '10px'}),
                     dbc.Card(
                         html.Div(className='fa fa-meh-o', style=card_icon),
                         color='danger',
-                         style={'maxWidth': '75', 'height': '100px', 'margin-left': '-10'},
+                         style={'maxWidth': 75, 'height': 100, 'margin-left': '-10'},
                     ),
                 ])
             ], width=4),  # Responsivo xs=12, sm=6, md=4
@@ -131,7 +131,7 @@ def populate_dropdown_receita(data):
     valor = df['Valor'].sum()
     val = df['Categoria'].unique().tolist()
     
-    return ([{'label': i, 'value': i} for i in val], val, f'R$ {valor}')
+    return [([{"label": x, "value": x} for x in df['Categoria'].unique()]), val, f"R$ {valor}"]
 
 # =========  Callbacks  =========== #
 # Despesas
@@ -144,7 +144,7 @@ def populate_dropdown_despesa(data):
     valor = df['Valor'].sum()
     val = df['Categoria'].unique().tolist()
     
-    return ([{'label': i, 'value': i} for i in val], val, f'R$ {valor}')
+    return [([{"label": x, "value": x} for x in df['Categoria'].unique()]), val, f"R$ {valor}"]
 
 
 # =========  Callbacks  =========== #
@@ -172,24 +172,35 @@ def saldo_total(receitas, despesas):
     ],
 )
 def create_graph1(receita_data, despesa_data, despesa, receita, theme):
-    """
-    Create the first graph, a line graph of the cash flow over time.
-    """
-    receita_df = pd.DataFrame(receita_data).set_index("Data")[["Valor"]]
-    despesa_df = pd.DataFrame(despesa_data).set_index("Data")[["Valor"]]
+    df_ds = pd.DataFrame(despesa_data).sort_values(by='Data', ascending=True)
+    df_rc = pd.DataFrame(receita_data).sort_values(by='Data', ascending=True)
+    
+    dfs = [df_ds, df_rc]
 
-    receita_sum = receita_df.groupby("Data").sum().rename(columns={"Valor": "Receita"})
-    despesa_sum = despesa_df.groupby("Data").sum().rename(columns={"Valor": "Despesa"})
-    df = receita_sum.join(despesa_sum, how="outer").fillna(0)
+    for df in dfs:
+        df['Acumulado'] = df['Valor'].cumsum()
+        df['Data'] = pd.to_datetime(df['Data'])
+        df['Mes'] = df['Data'].apply(lambda x: x.month)
+        
+    df_receitas_mes = df_rc.groupby("Mes")["Valor"].sum()
+    df_despesas_mes = df_ds.groupby("Mes")["Valor"].sum()
+    df_saldo_mes = df_receitas_mes - df_despesas_mes
+    df_saldo_mes.to_frame()
+    df_saldo_mes = df_saldo_mes.reset_index()
+    df_saldo_mes['Acumulado'] = df_saldo_mes['Valor'].cumsum()
+    df_saldo_mes['Mes'] = df['Mes'].apply(lambda x: calendar.month_abbr[x])
 
-    df["Acum"] = df["Receita"] - df["Despesa"]
-    df["Acum"] = df["Acum"].cumsum()
+    df_ds = df_ds[df_ds['Categoria'].isin(despesa)]
+    df_rc = df_rc[df_rc['Categoria'].isin(receita)]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(name="Fluxo de caixa", x=df.index, y=df["Acum"], mode="lines"))
+    
+    # fig.add_trace(go.Scatter(name='Despesas', x=df_ds['Data'], y=df_ds['Acumulo'], fill='tonexty', mode='lines'))
+    fig.add_trace(go.Scatter(name='Receitas', x=df_rc['Data'], y=df_rc['Acumulado'], fill='tonextx', mode='lines'))
+    # fig.add_trace(go.Scatter(name='Saldo Mensal', x=df_saldo_mes['Mes'], y=df_saldo_mes['Acumulado'], mode='lines'))
 
     fig.update_layout(margin=graph_margin, template=template_from_url(theme))
-    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     return fig
 
 # =========  Callbacks  =========== #
@@ -236,10 +247,10 @@ def grah2_show(data_receita, data_despesa, despesa, receita, start_date, end_dat
 )
 def pie_receita3(data_receita, receita, theme):
     df = pd.DataFrame(data_receita)
-    df = df[(df["Categoria"].isin(receita))]
+    df = df[(df['Categoria'].isin(receita))]
 
     # grafico 3
-    fig = px.pie(df, values=df.Valor, names=df.Categoria, hole=.2)
+    fig = px.pie(df, values=df['Valor'], names=df['Categoria'], hole=.2)
     fig.update_layout(title={"text": "Receitas"})
     fig.update_layout(margin=graph_margin, template=template_from_url(theme))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
@@ -258,7 +269,7 @@ def pie_receita4(data_despesa, despesa,theme):
     df = df[(df["Categoria"].isin(despesa))]
 
     # grafico 4
-    fig = px.pie(df, values=df.Valor, names=df.Categoria, hole=.2)
+    fig = px.pie(df, values=df['Valor'], names=df['Categoria'], hole=.2)
     fig.update_layout(title={"text": "Despesas"})
     fig.update_layout(margin=graph_margin, template=template_from_url(theme))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
