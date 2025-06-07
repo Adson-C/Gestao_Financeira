@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash
-from dash.dependencies import Input, Output
-import dash_bootstrap_templates as dbc
+from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 
@@ -9,16 +9,15 @@ from app import *
 
 from components import sidebar, dashboards, extratos
 
-# variaveis globais
-# from globals import *
-
-
 # DataFrames and Dcc.Store
-
-df_receitas = pd.read_csv("df_receitas.csv", index_col=0, parse_dates=True)
+df_receitas = pd.read_csv("df_receitas.csv", index_col=0)
+# Converter a coluna Data para datetime com formato específico
+df_receitas["Data"] = pd.to_datetime(df_receitas["Data"], format='%Y-%m-%d', errors='coerce')
 df_receitas_aux = df_receitas.to_dict()
 
-df_despesas = pd.read_csv("df_despesas.csv", index_col=0, parse_dates=True)
+df_despesas = pd.read_csv("df_despesas.csv", index_col=0)
+# Converter a coluna Data para datetime com formato específico
+df_despesas["Data"] = pd.to_datetime(df_despesas["Data"], format='%Y-%m-%d', errors='coerce')
 df_despesas_aux = df_despesas.to_dict()
 
 list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
@@ -37,6 +36,9 @@ app.layout = dbc.Container(children=[
     dcc.Store(id="store-despesas", data=df_despesas_aux),
     dcc.Store(id="store-cat-receitas", data=list_receitas_aux),
     dcc.Store(id="store-cat-despesas", data=list_despesas_aux),
+    # Stores para filtros selecionados (adicionados para manter o estado entre navegações)
+    dcc.Store(id="store-filtros-receitas", data=[]),
+    dcc.Store(id="store-filtros-despesas", data=[]),
     dbc.Row([
         dbc.Col([
             dcc.Location(id="url"),
@@ -59,6 +61,33 @@ def render_page_content(pathname):
         return extratos.layout
     else:
         return html.P("404: Not found", className="p-3")
+
+# Callback para sincronizar os filtros entre páginas
+@app.callback(
+    [Output("store-filtros-receitas", "data"),
+     Output("store-filtros-despesas", "data")],
+    [Input("dropdown-receita", "value"),
+     Input("dropdown-despesa", "value")],
+    [State("store-filtros-receitas", "data"),
+     State("store-filtros-despesas", "data")]
+)
+def sync_filters(dropdown_receita, dropdown_despesa, filtros_receitas, filtros_despesas):
+    # Determinar qual input disparou o callback
+    ctx = dash.callback_context
+    
+    # Se nenhum callback foi disparado ainda, retorne os valores atuais
+    if not ctx.triggered:
+        return filtros_receitas, filtros_despesas
+    
+    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    # Atualizar os filtros apropriados
+    if trigger_id == "dropdown-receita" and dropdown_receita is not None:
+        filtros_receitas = dropdown_receita
+    elif trigger_id == "dropdown-despesa" and dropdown_despesa is not None:
+        filtros_despesas = dropdown_despesa
+        
+    return filtros_receitas, filtros_despesas
 
 if __name__ == '__main__':
     app.run_server(port=8051, debug=True)

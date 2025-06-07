@@ -341,10 +341,11 @@ def toggle_modal_despesa(n1, is_open):
         State("switches-input-receita", "value"),
         State("select_receita", "value"),
         State("store-receitas", "data"),
+        State("dropdown-receita", "value"),  # Adicionado para manter a seleção do dropdown
     ]
 
 )
-def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, dict_receitas):
+def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, dict_receitas, dropdown_receita_value):
     # import pdb 
     # pdb.set_trace()
 
@@ -375,10 +376,11 @@ def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, d
         State("switches-input-despesa", "value"),
         State("select_despesa", "value"),
         State("store-despesas", "data"),
+        State("dropdown-despesa", "value"),  # Adicionado para manter a seleção do dropdown
     ]
 
 )
-def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas):
+def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas, dropdown_despesa_value):
     # import pdb 
     # pdb.set_trace()
 
