@@ -105,9 +105,15 @@ layout = dbc.Col([
                     ], width=6)
                 ]),
                 
+                # Stores para controlar modo de edição
+                dcc.Store(id="store-edit-mode-receita", data={"edit_mode": False, "edit_index": None}),
+                dcc.Store(id="store-edit-mode-despesa", data={"edit_mode": False, "edit_index": None}),
+                
                  # Modal Receita =============================================
                 dbc.Modal([
-                    dbc.ModalHeader(dbc.ModalTitle("Adicionar Receita")),
+                    dbc.ModalHeader([
+                        dbc.ModalTitle(id="modal-title-receita", children="Adicionar Receita")
+                    ]),
                     dbc.ModalBody([
                         dbc.Row([
                         # Receita ==================
@@ -170,7 +176,7 @@ layout = dbc.Col([
                                             dbc.Checklist(
                                                 id="checklist-selected-style-receita",
                                                 options=[{'label': i, 'value': i} for i in cat_receita],
-                                                value=[cat_receita[0]],
+                                                value=[],
                                                 label_checked_style={'color': 'red'},
                                                 input_checked_style={'backgroundColor': 'blue', 'borderColor': 'orange'},
                                             ),
@@ -183,7 +189,8 @@ layout = dbc.Col([
 
                             html.Div(id="id_teste_receita", style={'padding-top': '20px'}),
                             dbc.ModalFooter([
-                                dbc.Button("Adicionar", id='salvar_receita', color="success"),
+                                dbc.Button("Salvar", id='salvar_receita', color="success"),
+                                dbc.Button("Cancelar", id='cancelar_receita', color="secondary", style={"margin-left": "10px"}),
                                 dbc.Popover(dbc.PopoverBody("Receita salva"), target="salvar_receita", placement="left", trigger="click"),
                             ])
                     ], style={'margin-top': '25px'})
@@ -197,7 +204,9 @@ layout = dbc.Col([
                 
                 # Modal Despesa =============================================
                 dbc.Modal([
-                    dbc.ModalHeader(dbc.ModalTitle("Adicionar Despesa")),
+                    dbc.ModalHeader([
+                        dbc.ModalTitle(id="modal-title-despesa", children="Adicionar Despesa")
+                    ]),
                     dbc.ModalBody([
                         dbc.Row([
                             # Despesa =================
@@ -274,7 +283,8 @@ layout = dbc.Col([
 
                             html.Div(id="id_teste_depesa", style={'padding-top': '20px'}),
                             dbc.ModalFooter([
-                                dbc.Button("Adicionar", id='salvar_despesa', color="success"),
+                                dbc.Button("Salvar", id='salvar_despesa', color="success"),
+                                dbc.Button("Cancelar", id='cancelar_despesa', color="secondary", style={"margin-left": "10px"}),
                                 dbc.Popover(dbc.PopoverBody("Despesa salva"), target="salvar_despesa", placement="left", trigger="click"),
                             ])
                         ], style={'margin-top': '25px'})
@@ -299,14 +309,52 @@ layout = dbc.Col([
 # =========  Callbacks  =========== #
 # Pop-up receita
 @app.callback(
-    Output("modal-novo-receita", "is_open"),
-    Input("open-novo-receita", "n_clicks"),
-    State("modal-novo-receita", "is_open")
+    [Output("modal-novo-receita", "is_open"),
+     Output("store-edit-mode-receita", "data")],
+    [Input("open-novo-receita", "n_clicks"),
+     Input("cancelar_receita", "n_clicks")],
+    [State("modal-novo-receita", "is_open"),
+     State("store-edit-mode-receita", "data")]
 )
-def toggle_modal_receita(n1, is_open):
-    if n1:
-        return not is_open
+def toggle_modal_receita(n1, n_cancel, is_open, edit_data):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return is_open, edit_data
     
+    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if trigger_id == "open-novo-receita" and n1:
+        # Resetar para modo de criação
+        return True, {"edit_mode": False, "edit_index": None}
+    elif trigger_id == "cancelar_receita" and n_cancel:
+        return False, {"edit_mode": False, "edit_index": None}
+    
+    return is_open, edit_data
+
+# Pop-up despesa
+@app.callback(
+    [Output("modal-novo-despesa", "is_open"),
+     Output("store-edit-mode-despesa", "data")],
+    [Input("open-novo-despesa", "n_clicks"),
+     Input("cancelar_despesa", "n_clicks")],
+    [State("modal-novo-despesa", "is_open"),
+     State("store-edit-mode-despesa", "data")]
+)
+def toggle_modal_despesa(n1, n_cancel, is_open, edit_data):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return is_open, edit_data
+    
+    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if trigger_id == "open-novo-despesa" and n1:
+        # Resetar para modo de criação
+        return True, {"edit_mode": False, "edit_index": None}
+    elif trigger_id == "cancelar_despesa" and n_cancel:
+        return False, {"edit_mode": False, "edit_index": None}
+    
+    return is_open, edit_data
+
 # Pop-up perfis
 @app.callback(
     Output("modal-perfil", "is_open"),
@@ -317,22 +365,31 @@ def toggle_modal_pefil(n1, is_open):
     if n1:
         return not is_open
 
-
-# Pop-up despesa
+# Callback para atualizar título do modal receita
 @app.callback(
-    Output("modal-novo-despesa", "is_open"),
-    Input("open-novo-despesa", "n_clicks"),
-    State("modal-novo-despesa", "is_open")
+    Output("modal-title-receita", "children"),
+    Input("store-edit-mode-receita", "data")
 )
-def toggle_modal_despesa(n1, is_open):
-    if n1:
-        return not is_open
+def update_modal_title_receita(edit_data):
+    if edit_data["edit_mode"]:
+        return "Editar Receita"
+    return "Adicionar Receita"
 
+# Callback para atualizar título do modal despesa
+@app.callback(
+    Output("modal-title-despesa", "children"),
+    Input("store-edit-mode-despesa", "data")
+)
+def update_modal_title_despesa(edit_data):
+    if edit_data["edit_mode"]:
+        return "Editar Despesa"
+    return "Adicionar Despesa"
 
 # =========  Callbacks  =========== 
-# Pop-up receita
+# Salvar/Editar receita
 @app.callback(
-    Output("store-receitas", "data"),
+    [Output("store-receitas", "data"),
+     Output("modal-novo-receita", "is_open", allow_duplicate=True)],
     Input("salvar_receita", "n_clicks"),
     [
         State("txt-receita", "value"),
@@ -341,33 +398,40 @@ def toggle_modal_despesa(n1, is_open):
         State("switches-input-receita", "value"),
         State("select_receita", "value"),
         State("store-receitas", "data"),
-        State("dropdown-receita", "value"),  # Adicionado para manter a seleção do dropdown
-    ]
-
+        State("store-edit-mode-receita", "data"),
+    ],
+    prevent_initial_call=True
 )
-def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, dict_receitas, dropdown_receita_value):
-    # import pdb 
-    # pdb.set_trace()
+def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, dict_receitas, edit_data):
+    if not n_clicks or not valor or valor == '':
+        return dict_receitas, True
 
     df_receitas = pd.DataFrame(dict_receitas)
+    
+    valor = round(float(valor), 2)
+    date = pd.to_datetime(date).date()
+    categoria = categoria[0] if type(categoria) == list else categoria
+    recebido = 1 if 1 in switches else 0
+    fixo = 1 if 2 in switches else 0
 
-    if n_clicks and not (valor == '' or valor == None):
-        valor = round(float(valor), 2)
-        date = pd.to_datetime(date).date()
-        categoria = categoria[0] if type(categoria) == list else categoria
-        recebido = 1 if 1 in switches else 0
-        fixo = 1 if 2 in switches else 0
-
+    if edit_data["edit_mode"] and edit_data["edit_index"] is not None:
+        # Modo edição - atualizar linha existente
+        idx = edit_data["edit_index"]
+        if idx < len(df_receitas):
+            df_receitas.loc[idx] = [valor, recebido, fixo, date, categoria, descricao]
+    else:
+        # Modo criação - adicionar nova linha
         df_receitas.loc[df_receitas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
-        df_receitas.to_csv("df_receitas.csv")
-        
-    data_return = df_receitas.to_dict() 
-    return data_return
+    
+    df_receitas.to_csv("df_receitas.csv")
+    data_return = df_receitas.to_dict()
+    
+    return data_return, False
 
-# =========  Callbacks  =========== #
-# Pop-up despesas
+# Salvar/Editar despesa
 @app.callback(
-    Output("store-despesas", "data"),
+    [Output("store-despesas", "data"),
+     Output("modal-novo-despesa", "is_open", allow_duplicate=True)],
     Input("salvar_despesa", "n_clicks"),
     [
         State("txt_despesa", "value"),
@@ -376,28 +440,35 @@ def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, d
         State("switches-input-despesa", "value"),
         State("select_despesa", "value"),
         State("store-despesas", "data"),
-        State("dropdown-despesa", "value"),  # Adicionado para manter a seleção do dropdown
-    ]
-
+        State("store-edit-mode-despesa", "data"),
+    ],
+    prevent_initial_call=True
 )
-def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas, dropdown_despesa_value):
-    # import pdb 
-    # pdb.set_trace()
+def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, dict_despesas, edit_data):
+    if not n_clicks or not valor or valor == '':
+        return dict_despesas, True
 
     df_despesas = pd.DataFrame(dict_despesas)
+    
+    valor = round(float(valor), 2)
+    date = pd.to_datetime(date).date()
+    categoria = categoria[0] if type(categoria) is list else categoria
+    recebido = 1 if 1 in switches else 0
+    fixo = 1 if 2 in switches else 0
 
-    if n_clicks and not (valor == '' or valor == None):
-        valor = round(float(valor), 2)
-        date = pd.to_datetime(date).date()
-        categoria = categoria[0] if type(categoria) is list else categoria
-        recebido = 1 if 1 in switches else 0
-        fixo = 1 if 2 in switches else 0
-
+    if edit_data["edit_mode"] and edit_data["edit_index"] is not None:
+        # Modo edição - atualizar linha existente
+        idx = edit_data["edit_index"]
+        if idx < len(df_despesas):
+            df_despesas.loc[idx] = [valor, recebido, fixo, date, categoria, descricao]
+    else:
+        # Modo criação - adicionar nova linha
         df_despesas.loc[df_despesas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
-        df_despesas.to_csv("df_despesas.csv")
-        
-    data_return = df_despesas.to_dict()    
-    return data_return
+    
+    df_despesas.to_csv("df_despesas.csv")
+    data_return = df_despesas.to_dict()
+    
+    return data_return, False
 
 # =========  Callbacks  =========== #
 # Remover/add Categorias Despesas

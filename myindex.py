@@ -10,25 +10,60 @@ from app import *
 from components import sidebar, dashboards, extratos
 
 # DataFrames and Dcc.Store
-df_receitas = pd.read_csv("df_receitas.csv", index_col=0)
-# Converter a coluna Data para datetime com formato específico
-df_receitas["Data"] = pd.to_datetime(df_receitas["Data"], format='%Y-%m-%d', errors='coerce')
-df_receitas_aux = df_receitas.to_dict()
+try:
+    df_receitas = pd.read_csv("df_receitas.csv", index_col=0)
+    # Converter a coluna Data para datetime com formato específico
+    df_receitas["Data"] = pd.to_datetime(df_receitas["Data"], format='%Y-%m-%d', errors='coerce')
+    df_receitas_aux = df_receitas.to_dict()
+except FileNotFoundError:
+    # Se o arquivo não existir, criar um dataframe vazio
+    df_receitas = pd.DataFrame({
+        'Valor': [], 
+        'Efetuado': [],
+        'Fixo': [],
+        'Data': [],
+        'Categoria': [],
+        'Descricão': [],
+    })
+    df_receitas_aux = df_receitas.to_dict()
 
-df_despesas = pd.read_csv("df_despesas.csv", index_col=0)
-# Converter a coluna Data para datetime com formato específico
-df_despesas["Data"] = pd.to_datetime(df_despesas["Data"], format='%Y-%m-%d', errors='coerce')
-df_despesas_aux = df_despesas.to_dict()
+try:
+    df_despesas = pd.read_csv("df_despesas.csv", index_col=0)
+    # Converter a coluna Data para datetime com formato específico
+    df_despesas["Data"] = pd.to_datetime(df_despesas["Data"], format='%Y-%m-%d', errors='coerce')
+    df_despesas_aux = df_despesas.to_dict()
+except FileNotFoundError:
+    # Se o arquivo não existir, criar um dataframe vazio
+    df_despesas = pd.DataFrame({
+        'Valor': [], 
+        'Efetuado': [],
+        'Fixo': [],
+        'Data': [],
+        'Categoria': [],
+        'Descricão': [],
+    })
+    df_despesas_aux = df_despesas.to_dict()
 
-list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
-list_receitas_aux = list_receitas.to_dict()
+try:
+    list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
+    list_receitas_aux = list_receitas.to_dict()
+except FileNotFoundError:
+    # Se o arquivo não existir, criar categorias padrão
+    list_receitas = pd.DataFrame({'Categoria': ['Salário', 'Vale', 'VR alimentação']})
+    list_receitas.to_csv('df_cat_receita.csv')
+    list_receitas_aux = list_receitas.to_dict()
 
-list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
-list_despesas_aux = list_despesas.to_dict()
+try:
+    list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
+    list_despesas_aux = list_despesas.to_dict()
+except FileNotFoundError:
+    # Se o arquivo não existir, criar categorias padrão
+    list_despesas = pd.DataFrame({'Categoria': ['Compras Mês', 'Estacionamento', 'Gasolina', 'Internet', 'Luz', 'Saúde']})
+    list_despesas.to_csv('df_cat_despesa.csv')
+    list_despesas_aux = list_despesas.to_dict()
 
 # =========  Layout  =========== #
 content = html.Div(id="page-content")
-
 
 app.layout = dbc.Container(children=[
      # Stores the URL cache
@@ -39,6 +74,7 @@ app.layout = dbc.Container(children=[
     # Stores para filtros selecionados (adicionados para manter o estado entre navegações)
     dcc.Store(id="store-filtros-receitas", data=[]),
     dcc.Store(id="store-filtros-despesas", data=[]),
+    
     dbc.Row([
         dbc.Col([
             dcc.Location(id="url"),
@@ -88,6 +124,39 @@ def sync_filters(dropdown_receita, dropdown_despesa, filtros_receitas, filtros_d
         filtros_despesas = dropdown_despesa
         
     return filtros_receitas, filtros_despesas
+
+# Callback para limpar campos do modal ao abrir para nova entrada
+@app.callback(
+    [Output("txt-receita", "value", allow_duplicate=True),
+     Output("valor_receita", "value", allow_duplicate=True),
+     Output("data_receita", "date", allow_duplicate=True),
+     Output("switches-input-receita", "value", allow_duplicate=True),
+     Output("select_receita", "value", allow_duplicate=True)],
+    [Input("open-novo-receita", "n_clicks")],
+    prevent_initial_call=True
+)
+def clear_receita_modal(n_clicks):
+    if n_clicks:
+        from datetime import datetime
+        from globals import cat_receita
+        return "", "", datetime.today().date(), [1], cat_receita[0] if cat_receita else ""
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+@app.callback(
+    [Output("txt_despesa", "value", allow_duplicate=True),
+     Output("valor_despesa", "value", allow_duplicate=True),
+     Output("data_despesa", "date", allow_duplicate=True),
+     Output("switches-input-despesa", "value", allow_duplicate=True),
+     Output("select_despesa", "value", allow_duplicate=True)],
+    [Input("open-novo-despesa", "n_clicks")],
+    prevent_initial_call=True
+)
+def clear_despesa_modal(n_clicks):
+    if n_clicks:
+        from datetime import datetime
+        from globals import cat_despesa
+        return "", "", datetime.today().date(), [1], cat_despesa[0] if cat_despesa else ""
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 if __name__ == '__main__':
     app.run_server(port=8051, debug=True)
