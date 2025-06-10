@@ -1,0 +1,33 @@
+
+ÍCONE DO EXECUTÁVEL - GESTÃO FINANCEIRA
+=======================================
+
+O ícone icon.ico não foi encontrado ou não pôde ser criado automaticamente.
+
+OPÇÕES:
+
+1. CRIAR ÍCONE PERSONALIZADO:
+   - Use um editor online: https://www.favicon.cc/
+   - Ou baixe um ícone gratuito: https://www.flaticon.com/
+   - Salve como "icon.ico" nesta pasta (assets/)
+   - Tamanho recomendado: 256x256 pixels
+
+2. USAR ÍCONE PADRÃO:
+   - O PyInstaller usará um ícone padrão
+   - O executável funcionará normalmente
+   - Apenas não terá ícone personalizado
+
+3. INSTALAR PILLOW PARA ÍCONE AUTOMÁTICO:
+   - Execute: pip install Pillow
+   - Execute novamente: python create_icon.py
+   - Um ícone será gerado automaticamente
+
+SUGESTÕES DE DESIGN:
+- Símbolo de dinheiro ($, €, R$)
+- Gráfico de barras
+- Calculadora
+- Cores: azul (#2E86AB) e dourado (#FFC107)
+
+Desenvolvido por: Adson Sá
+Data: 2025
+        

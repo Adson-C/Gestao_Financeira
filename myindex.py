@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 
 from app import *
+import os
 
 from components import sidebar, dashboards, extratos
 
@@ -159,4 +160,8 @@ def clear_despesa_modal(n_clicks):
     return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 if __name__ == '__main__':
-    app.run_server(port=8051, debug=True)
+    port = int(os.environ.get('PORT', 8051))
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    app.run_server(host='0.0.0.0', port=port, debug=debug)
+
+    # app.run_server(port=8051, debug=True)
