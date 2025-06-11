@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 from datetime import datetime
+from github_storage import github_storage
 
 from app import app
 from dash_bootstrap_templates import template_from_url, ThemeChangerAIO
@@ -414,14 +415,17 @@ def excluir_despesa(n_clicks, selected_rows, store_data):
         
         if selected_idx < len(df):
             df = df.drop(df.index[selected_idx]).reset_index(drop=True)
-            df.to_csv("df_despesas.csv")
+            
+            # 🚀 NOVA LINHA: Salvar no GitHub automaticamente
+            github_storage.salvar_despesas(df)
+            
             return df.to_dict()
     except Exception as e:
         print(f"Erro ao excluir despesa: {e}")
     
     return dash.no_update
 
-# Callback para excluir receita
+# Modificar callback de excluir receita (linha ~230):
 @app.callback(
     Output("store-receitas", "data", allow_duplicate=True),
     [Input("btn-excluir-receita", "n_clicks")],
@@ -439,7 +443,10 @@ def excluir_receita(n_clicks, selected_rows, store_data):
         
         if selected_idx < len(df):
             df = df.drop(df.index[selected_idx]).reset_index(drop=True)
-            df.to_csv("df_receitas.csv")
+            
+            # 🚀 NOVA LINHA: Salvar no GitHub automaticamente
+            github_storage.salvar_receitas(df)
+            
             return df.to_dict()
     except Exception as e:
         print(f"Erro ao excluir receita: {e}")

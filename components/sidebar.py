@@ -9,6 +9,7 @@ from datetime import datetime, date
 import plotly.express as px
 import numpy as np
 import pandas as pd
+from github_storage import github_storage
 
 from globals import *
 from dash_bootstrap_templates import ThemeChangerAIO
@@ -423,9 +424,10 @@ def salvar_form_receita(n_clicks, descricao, valor, date, switches, categoria, d
         # Modo criação - adicionar nova linha
         df_receitas.loc[df_receitas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
     
-    df_receitas.to_csv("df_receitas.csv")
-    data_return = df_receitas.to_dict()
+    # 🚀 NOVA LINHA: Salvar no GitHub automaticamente
+    github_storage.salvar_receitas(df_receitas)
     
+    data_return = df_receitas.to_dict()
     return data_return, False
 
 # Salvar/Editar despesa
@@ -465,9 +467,10 @@ def salvar_form_despesa(n_clicks, descricao, valor, date, switches, categoria, d
         # Modo criação - adicionar nova linha
         df_despesas.loc[df_despesas.shape[0]] = [valor, recebido, fixo, date, categoria, descricao]
     
-    df_despesas.to_csv("df_despesas.csv")
-    data_return = df_despesas.to_dict()
+    # 🚀 NOVA LINHA: Salvar no GitHub automaticamente
+    github_storage.salvar_despesas(df_despesas)
     
+    data_return = df_despesas.to_dict()
     return data_return, False
 
 # =========  Callbacks  =========== #
@@ -501,7 +504,6 @@ def add_category(n, n2, txt, check_delete, data):
         if txt == "" or txt == None:
             txt1 = "O campo de texto não pode estar vazio para o registro de uma nova categoria."
             style1 = {'color': 'red'}
-
         else:
             cat_despesa = cat_despesa + [txt] if txt not in cat_despesa else cat_despesa
             txt1 = f'A categoria {txt} foi adicionada com sucesso!'
@@ -513,9 +515,11 @@ def add_category(n, n2, txt, check_delete, data):
     
     opt_despesa = [{"label": i, "value": i} for i in cat_despesa]
     df_cat_despesa = pd.DataFrame(cat_despesa, columns=['Categoria'])
-    df_cat_despesa.to_csv("df_cat_despesa.csv")
+    
+    # 🚀 NOVA LINHA: Salvar no GitHub automaticamente
+    github_storage.salvar_categorias_despesas(df_cat_despesa)
+    
     data_return = df_cat_despesa.to_dict()
-
     return [txt1, style1, opt_despesa, opt_despesa, [], data_return]
 
 # =========  Callbacks  =========== #
@@ -549,11 +553,10 @@ def add_categoryrce(n, n2, txt, check_delete, data):
         if txt == "" or txt == None:
             txt1 = "O campo de texto não pode estar vazio para o registro de uma nova categoria."
             style1 = {'color': 'red'}
-
-    if n and not(txt == "" or txt == None):
-        cat_receita = cat_receita + [txt] if txt not in cat_receita else cat_receita
-        txt1 = f'A categoria {txt} foi adicionada com sucesso!'
-        style1 = {'color': 'green'}
+        elif not(txt == "" or txt == None):
+            cat_receita = cat_receita + [txt] if txt not in cat_receita else cat_receita
+            txt1 = f'A categoria {txt} foi adicionada com sucesso!'
+            style1 = {'color': 'green'}
     
     if n2:
         if check_delete == []:
@@ -563,7 +566,9 @@ def add_categoryrce(n, n2, txt, check_delete, data):
     
     opt_receita = [{"label": i, "value": i} for i in cat_receita]
     df_cat_receita = pd.DataFrame(cat_receita, columns=['Categoria'])
-    df_cat_receita.to_csv("df_cat_receita.csv")
+    
+    # 🚀 NOVA LINHA: Salvar no GitHub automaticamente
+    github_storage.salvar_categorias_receitas(df_cat_receita)
+    
     data_return = df_cat_receita.to_dict()
-
     return [txt1, style1, opt_receita, opt_receita, [], data_return]
