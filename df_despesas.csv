@@ -1,5 +1,6 @@
 ,Valor,Efetuado,Fixo,Data,Categoria,Descricão
-0,800.0,1,0,2025-06-12T00:00:00,Poupança,Investimento
-1,320.0,1,0,2025-06-12T00:00:00,Gasolina,Gasolina
-2,576.0,1,0,2025-06-12T00:00:00,Cartão Crédito,Cartão
-3,305.0,1,0,2025-06-12,Estacionamento,Estacionamento
+0,800.0,1,0,,Poupança,Investimento
+1,320.0,1,0,,Gasolina,Gasolina
+2,576.0,1,0,,Cartão Crédito,Cartão
+3,305.0,1,0,2025-06-12T00:00:00,Estacionamento,Estacionamento
+4,100.0,1,0,2025-06-12,Investimento,Adcional de poupança
