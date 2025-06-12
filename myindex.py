@@ -4,64 +4,94 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
+import requests
+import base64
+import io
 
 from app import *
 import os
 
 from components import sidebar, dashboards, extratos
 
-# DataFrames and Dcc.Store
-try:
-    df_receitas = pd.read_csv("df_receitas.csv", index_col=0)
-    # Converter a coluna Data para datetime com formato específico
+# ===== FUNÇÃO PARA CARREGAR DADOS DO GITHUB OU LOCAL =====
+def carregar_dados_github_ou_local(filename, estrutura_padrao):
+    """Carrega dados do GitHub se possível, senão do arquivo local"""
+    
+    # Tentar carregar do GitHub primeiro
+    token = os.environ.get('GITHUB_TOKEN')
+    owner = os.environ.get('REPO_OWNER') 
+    repo = os.environ.get('REPO_NAME')
+    
+    if all([token, owner, repo]):
+        try:
+            url = f"https://api.github.com/repos/{owner}/{repo}/contents/{filename}"
+            headers = {'Authorization': f'token {token}'}
+            
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                content = base64.b64decode(response.json()['content']).decode()
+                df = pd.read_csv(io.StringIO(content), index_col=0)
+                print(f"✅ {filename} carregado do GitHub")
+                return df
+                
+        except Exception as e:
+            print(f"⚠️ Erro ao carregar {filename} do GitHub: {e}")
+    
+    # Fallback: carregar arquivo local
+    try:
+        df = pd.read_csv(filename, index_col=0)
+        # Limpar dados inconsistentes
+        if 'Categoria' in df.columns:
+            df = df.dropna(subset=['Categoria'])  # Remove linhas sem categoria
+        print(f"📁 {filename} carregado localmente")
+        return df
+    except FileNotFoundError:
+        print(f"📄 Criando {filename} novo")
+        df = pd.DataFrame(estrutura_padrao)
+        df.to_csv(filename)
+        return df
+
+# ===== ESTRUTURAS PADRÃO =====
+estrutura_receitas = {
+    'Valor': [], 
+    'Efetuado': [],
+    'Fixo': [],
+    'Data': [],
+    'Categoria': [],
+    'Descricão': [],
+}
+
+estrutura_categorias = {
+    'Categoria': []
+}
+
+# ===== CARREGAR DADOS (SUBSTITUINDO A SEÇÃO ATUAL) =====
+
+# Carregar dados das receitas
+df_receitas = carregar_dados_github_ou_local("df_receitas.csv", estrutura_receitas)
+if 'Data' in df_receitas.columns and not df_receitas.empty:
     df_receitas["Data"] = pd.to_datetime(df_receitas["Data"], format='%Y-%m-%d', errors='coerce')
-    df_receitas_aux = df_receitas.to_dict()
-except FileNotFoundError:
-    # Se o arquivo não existir, criar um dataframe vazio
-    df_receitas = pd.DataFrame({
-        'Valor': [], 
-        'Efetuado': [],
-        'Fixo': [],
-        'Data': [],
-        'Categoria': [],
-        'Descricão': [],
-    })
-    df_receitas_aux = df_receitas.to_dict()
+df_receitas_aux = df_receitas.to_dict()
 
-try:
-    df_despesas = pd.read_csv("df_despesas.csv", index_col=0)
-    # Converter a coluna Data para datetime com formato específico
+# Carregar dados das despesas  
+df_despesas = carregar_dados_github_ou_local("df_despesas.csv", estrutura_receitas)
+if 'Data' in df_despesas.columns and not df_despesas.empty:
     df_despesas["Data"] = pd.to_datetime(df_despesas["Data"], format='%Y-%m-%d', errors='coerce')
-    df_despesas_aux = df_despesas.to_dict()
-except FileNotFoundError:
-    # Se o arquivo não existir, criar um dataframe vazio
-    df_despesas = pd.DataFrame({
-        'Valor': [], 
-        'Efetuado': [],
-        'Fixo': [],
-        'Data': [],
-        'Categoria': [],
-        'Descricão': [],
-    })
-    df_despesas_aux = df_despesas.to_dict()
+df_despesas_aux = df_despesas.to_dict()
 
-try:
-    list_receitas = pd.read_csv('df_cat_receita.csv', index_col=0)
-    list_receitas_aux = list_receitas.to_dict()
-except FileNotFoundError:
-    # Se o arquivo não existir, criar categorias padrão
+# Carregar categorias de receitas
+list_receitas = carregar_dados_github_ou_local('df_cat_receita.csv', estrutura_categorias)
+if list_receitas.empty:
     list_receitas = pd.DataFrame({'Categoria': ['Salário', 'Vale', 'VR alimentação']})
     list_receitas.to_csv('df_cat_receita.csv')
-    list_receitas_aux = list_receitas.to_dict()
+list_receitas_aux = list_receitas.to_dict()
 
-try:
-    list_despesas = pd.read_csv('df_cat_despesa.csv', index_col=0)
-    list_despesas_aux = list_despesas.to_dict()
-except FileNotFoundError:
-    # Se o arquivo não existir, criar categorias padrão
+# Carregar categorias de despesas
+list_despesas = carregar_dados_github_ou_local('df_cat_despesa.csv', estrutura_categorias)
+if list_despesas.empty:
     list_despesas = pd.DataFrame({'Categoria': ['Compras Mês', 'Estacionamento', 'Gasolina', 'Internet', 'Luz', 'Saúde']})
     list_despesas.to_csv('df_cat_despesa.csv')
-    list_despesas_aux = list_despesas.to_dict()
+list_despesas_aux = list_despesas.to_dict()
 
 # =========  Layout  =========== #
 content = html.Div(id="page-content")
@@ -163,5 +193,3 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8051))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     app.run_server(host='0.0.0.0', port=port, debug=debug)
-
-    # app.run_server(port=8051, debug=True)
